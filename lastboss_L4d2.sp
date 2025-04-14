@@ -82,7 +82,7 @@ enum struct TankData {
     int startHealth;
     Handle timer;
     float ftlPos[3];
-    float trsPos[MAXPLAYERS+1][3];
+    float trsPos[MAXPLAYERS+1 * 3]; // Исправлено: одномерный массив для координат
     int freeze[MAXPLAYERS+1];
     int Rabies[MAXPLAYERS+1];
     int Toxin[MAXPLAYERS+1];
