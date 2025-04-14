@@ -3,6 +3,7 @@
 *					Author: ztar
 * 			Web: http://ztar.blog7.fc2.com/
 *           Fixed by: SourceMod Expert
+*           Multi-Tank fix by: YourName
 *******************************************************/
 
 #pragma semicolon 1
@@ -12,7 +13,7 @@
 #include <sdktools>
 #include <sdkhooks>
 
-#define PLUGIN_VERSION "3.0-fixed"
+#define PLUGIN_VERSION "3.0-multifix"
 #define DEBUG 0
 
 #define ON          1
@@ -74,6 +75,21 @@
 #define MESSAGE_SEVENTH "\x03[ФИНАЛЬНЫЙ БОСС] \x04СЕДЬМАЯ \x01ФАЗА  \x03ТРАНСФОРМАЦИЯ \x05ТАНКА \x04==> \x01【\x03ЗАМОРАЖИВАЮЩИЙ УДАР\x01】"
 #define MESSAGE_EIGHTH "\x03[ФИНАЛЬНЫЙ БОСС] \x04ФИНАЛЬНАЯ \x01ФАЗА  \x03ТРАНСФОРМАЦИЯ \x05ТАНКА \x04==> \x01【\x03ОГНЕННЫЙ ЩИТ\x01】"
 
+/* Структура для хранения данных о танке */
+enum struct TankData {
+    int client;
+    int form;
+    int startHealth;
+    Handle timer;
+    float ftlPos[3];
+    float trsPos[MAXPLAYERS+1][3];
+    int freeze[MAXPLAYERS+1];
+    int Rabies[MAXPLAYERS+1];
+    int Toxin[MAXPLAYERS+1];
+    int alpharate;
+    int visibility;
+}
+
 /* Консольные переменные */
 ConVar sm_lastboss_enable;
 ConVar sm_lastboss_enable_announce;
@@ -94,13 +110,6 @@ ConVar sm_lastboss_enable_abyss;
 ConVar sm_lastboss_enable_warp;
 
 ConVar sm_lastboss_health_max;
-//ConVar sm_lastboss_health_second;
-//ConVar sm_lastboss_health_third;
-//ConVar sm_lastboss_health_fourth;
-//ConVar sm_lastboss_health_fifth;
-//ConVar sm_lastboss_health_sixth;
-//ConVar sm_lastboss_health_seventh;
-//ConVar sm_lastboss_health_eighth;
 
 ConVar sm_lastboss_color_first;
 ConVar sm_lastboss_color_second;
@@ -149,27 +158,22 @@ ConVar sm_lastboss_bombardforce;
 ConVar sm_lastboss_eighth_c5m5_bridge;
 ConVar sm_lastboss_warp_interval;
 
-/* Таймеры */
-Handle TimerUpdate = null;
-
-// ID сообщения для затемнения
+/* Глобальные переменные */
+ArrayList g_aTanks; // Массив для хранения данных о всех танках
+int bossflag = OFF, lastflag = OFF, wavecount;
+bool g_l4d1 = false;
+bool isSlowed[MAXPLAYERS+1] = {false, ...};
+int force_default, g_iVelocity = -1;
+static int laggedMovementOffset = 0;
 UserMsg g_FadeUserMsgId;
 
 float ToxinAngle[20] = {0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 20.0, 15.0, 10.0, 5.0, 0.0, -5.0, -10.0, -15.0, -20.0, -25.0, -20.0, -15.0, -10.0, -5.0};
 
-/* Глобальные переменные */
-int alpharate, visibility, bossflag = OFF, lastflag = OFF, idBoss = DEAD, form_prev = DEAD, force_default, g_iVelocity = -1, wavecount;
-int freeze[MAXPLAYERS+1] = {0, ...}, Rabies[MAXPLAYERS+1] = {0, ...}, Toxin[MAXPLAYERS+1] = {0, ...};
-static int laggedMovementOffset = 0;
-float ftlPos[3], trsPos[MAXPLAYERS+1][3];
-bool g_l4d1 = false, isSlowed[MAXPLAYERS+1] = {false, ...};
-int StartHealth = 0;
-
 public Plugin myinfo = 
 {
-	name = "[L4D2] Финальный босс (Fixed)",
+	name = "[L4D2] Финальный босс (Multi-Tank Fix)",
 	author = "ztar & IxAvnoMonvAxI, fixed by SourceMod Expert",
-	description = "Особый танк появляется во время финала (исправленная версия)",
+	description = "Особый танк появляется во время финала (исправленная версия с поддержкой нескольких танков)",
 	version = PLUGIN_VERSION,
 	url = "http://ztar.blog7.fc2.com/"
 }
@@ -179,6 +183,8 @@ public void OnPluginStart()
 	char game[32];
 	GetGameFolderName(game, sizeof(game));
 	g_l4d1 = StrEqual(game, "left4dead");
+	
+	g_aTanks = new ArrayList(sizeof(TankData));
 	
 	/* Включение/Отключение */
 	sm_lastboss_enable		    = CreateConVar("sm_lastboss_enable", "2", "Появление особого танка (0: Нет | 1: После вызова | 2: Всегда | 3: Только 2-я фаза)", FCVAR_NOTIFY);
@@ -201,13 +207,6 @@ public void OnPluginStart()
 
 	/* Здоровье */
 	sm_lastboss_health_max	  = CreateConVar("sm_lastboss_health_max", "6000", "Здоровье танка в 1-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_second = CreateConVar("sm_lastboss_health_second","54000", "Здоровье танка во 2-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_third  = CreateConVar("sm_lastboss_health_third", "46000", "Здоровье танка в 3-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_fourth = CreateConVar("sm_lastboss_health_fourth", "38000", "Здоровье танка в 4-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_fifth  = CreateConVar("sm_lastboss_health_fifth", "32000", "Здоровье танка в 5-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_sixth  = CreateConVar("sm_lastboss_health_sixth", "24000", "Здоровье танка в 6-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_seventh = CreateConVar("sm_lastboss_health_seventh", "16000", "Здоровье танка в 7-й фазе", FCVAR_NOTIFY);
-	//sm_lastboss_health_eighth  = CreateConVar("sm_lastboss_health_eighth", "8000", "Здоровье танка в 8-й фазе", FCVAR_NOTIFY);
 
 	/* Цвет */
 	sm_lastboss_color_first	  = CreateConVar("sm_lastboss_color_first", "255 255 80", "Цвет танка в 1-й фазе (желтый)", FCVAR_NOTIFY);
@@ -324,11 +323,19 @@ void InitData()
 	/* Сброс флагов */
 	bossflag = OFF;
 	lastflag = OFF;
-	idBoss = DEAD;
-	form_prev = DEAD;
 	wavecount = 0;
-	StartHealth = 0;
 	FindConVar("z_tank_throw_force").SetInt(force_default, true, true);
+	
+	// Очистка массива танков
+	for (int i = 0; i < g_aTanks.Length; i++) {
+		TankData tank;
+		g_aTanks.GetArray(i, tank);
+		if (tank.timer != null) {
+			KillTimer(tank.timer);
+			tank.timer = null;
+		}
+	}
+	g_aTanks.Clear();
 }
 
 public void OnMapStart()
@@ -394,10 +401,6 @@ public Action Event_Tank_Spawn(Event event, const char[] name, bool dontBroadcas
 		bossflag = ON;
 	}
 	
-	/* Уже существует? */
-	/*if(idBoss != DEAD)
-		return Plugin_Continue;*/
-	
 	/* Только второй Танк? */
 	if(wavecount < 2 && sm_lastboss_enable.IntValue == 3)
 		return Plugin_Continue;
@@ -410,12 +413,6 @@ public Action Event_Tank_Spawn(Event event, const char[] name, bool dontBroadcas
 		{
 			/* Получаем ID босса и устанавливаем таймер */
 			CreateTimer(0.3, SetTankHealth, client);
-			if(TimerUpdate != null)
-			{
-				KillTimer(TimerUpdate);
-				TimerUpdate = null;
-			}
-			TimerUpdate = CreateTimer(1.0, TankUpdate, _, TIMER_REPEAT);
 			
 			for(int j = 1; j <= MaxClients; j++)
 			{
@@ -437,29 +434,32 @@ public Action Event_Tank_Spawn(Event event, const char[] name, bool dontBroadcas
 public Action SetTankHealth(Handle timer, int client)
 {
 	/* Установка здоровья и ID после спавна */
-	idBoss = client;
 	char CurrentMap[64];
 	GetCurrentMap(CurrentMap, sizeof(CurrentMap));
 	
-	if(IsValidEntity(idBoss) && IsClientInGame(idBoss))
+	if(IsValidEntity(client) && IsClientInGame(client))
 	{
-		/* На некоторых картах форма сразу четвертая */
+		TankData tank;
+		tank.client = client;
+		tank.startHealth = sm_lastboss_health_max.IntValue;
+		SetEntityHealth(client, tank.startHealth);
+		
 		if(lastflag || (StrEqual(CurrentMap, "c5m5_bridge") && sm_lastboss_eighth_c5m5_bridge.IntValue))
 		{
-			int health = sm_lastboss_health_max.IntValue;
-			SetEntityHealth(idBoss, health);
-			StartHealth = health;
-			form_prev = FORMEIGHT;
-			SetParameter(FORMEIGHT);
+			tank.form = FORMEIGHT;
 		}
 		else
 		{
-			int health = sm_lastboss_health_max.IntValue;
-			SetEntityHealth(idBoss, health);
-			StartHealth = health;
-			form_prev = FORMONE;
-			SetParameter(FORMONE);
+			tank.form = FORMONE;
 		}
+		
+		// Создаем таймер для этого танка
+		tank.timer = CreateTimer(1.0, TankUpdate, client, TIMER_REPEAT);
+		
+		// Добавляем танк в массив
+		g_aTanks.PushArray(tank);
+		
+		SetParameter(client, tank.form);
 	}
 	return Plugin_Continue;
 }
@@ -482,12 +482,17 @@ public Action Event_Player_Death(Event event, const char[] name, bool dontBroadc
 
 	if((bossflag && sm_lastboss_enable.IntValue == 1) || (sm_lastboss_enable.IntValue == 2) || (bossflag && sm_lastboss_enable.IntValue == 3))
 	{
-		/* Взрыв и огонь при смерти */
-		if(idBoss == client)
+		// Находим танка в массиве
+		int index = FindTankIndex(client);
+		if (index != -1)
 		{
+			TankData tank;
+			g_aTanks.GetArray(index, tank);
+			
+			/* Взрыв и огонь при смерти */
 			float Pos[3];
-			GetClientAbsOrigin(idBoss, Pos);
-			EmitSoundToAll(SOUND_EXPLODE, idBoss);
+			GetClientAbsOrigin(client, Pos);
+			EmitSoundToAll(SOUND_EXPLODE, client);
 			ShowParticle(Pos, PARTICLE_DEATH, 5.0);
 			LittleFlower(Pos, MOLOTOV);
 			LittleFlower(Pos, EXPLODE);
@@ -513,22 +518,19 @@ public Action Event_Player_Death(Event event, const char[] name, bool dontBroadc
 				if (StrEqual(model, ENTITY_TIRE))
 				{
 					int owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
-					if (owner == idBoss) 
+					if (owner == client) 
 					{
 						AcceptEntityInput(entity, "Kill");
 					}
 				}
 			}
 			
-			idBoss = DEAD;
-			form_prev = DEAD;
-			StartHealth = 0;
-			
-			if(TimerUpdate != null)
-			{
-				KillTimer(TimerUpdate);
-				TimerUpdate = null;
+			// Удаляем таймер и запись о танке
+			if (tank.timer != null) {
+				KillTimer(tank.timer);
+				tank.timer = null;
 			}
+			g_aTanks.Erase(index);
 		}
 	}
 	
@@ -538,8 +540,6 @@ public Action Event_Player_Death(Event event, const char[] name, bool dontBroadc
 		{
 			isSlowed[target] = false;
 			SetEntityGravity(target, 1.0);
-			Rabies[target] = 0;
-			Toxin[target] = 0;
 		}
 	}
 	return Plugin_Continue;
@@ -553,20 +553,10 @@ void Event_RoundEnd(Event event, const char[] name, bool dontBroadcast)
 		{
 			isSlowed[target] = false;
 			SetEntityGravity(target, 1.0);
-			Rabies[target] = 0;
-			Toxin[target] = 0;
 		}
 	}
 	
-	if(TimerUpdate != null)
-	{
-		KillTimer(TimerUpdate);
-		TimerUpdate = null;
-	}
-	
-	idBoss = DEAD;
-	form_prev = DEAD;
-	StartHealth = 0;
+	InitData();
 }
 
 public Action Event_Player_Hurt(Event event, const char[] name, bool dontBroadcast)
@@ -577,8 +567,12 @@ public Action Event_Player_Hurt(Event event, const char[] name, bool dontBroadca
 	char weapon[64];
 	GetEventString(event, "weapon", weapon, sizeof(weapon));
 	
-	if(!IsValidEntity(idBoss) || !IsClientInGame(idBoss) || idBoss == DEAD)
-		return Plugin_Continue;
+	// Находим танка в массиве (если атакующий - танк)
+	int tankIndex = FindTankIndex(attacker);
+	if (tankIndex == -1) return Plugin_Continue;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
 	
 	/* Только второй Танк? */
 	if(wavecount < 2 && sm_lastboss_enable.IntValue == 3)
@@ -587,100 +581,102 @@ public Action Event_Player_Hurt(Event event, const char[] name, bool dontBroadca
 	/* Специальные способности */
 	if((bossflag && sm_lastboss_enable.IntValue == 1) || (sm_lastboss_enable.IntValue == 2) || (bossflag && sm_lastboss_enable.IntValue == 3))
 	{
-		if(StrEqual(weapon, "tank_claw") && attacker == idBoss)
+		if(StrEqual(weapon, "tank_claw") && attacker == tank.client)
 		{
-			GetClientAbsOrigin(target, trsPos[target]);
+			GetClientAbsOrigin(target, tank.trsPos[target]);
+			g_aTanks.SetArray(tankIndex, tank);
 			
 			if(sm_lastboss_enable_quake.IntValue)
 			{
 				/* Умение: Землетрясение (если цель оглушена) */
-				SkillEarthQuake(target);
+				SkillEarthQuake(tank.client, target);
 			}
 			if(sm_lastboss_enable_gravity.IntValue)
 			{
-				if(form_prev == FORMTWO)
+				if(tank.form == FORMTWO)
 				{
 					/* Умение: Гравитационный коготь (только 2 форма) */
-					SkillGravityClaw(target);
+					SkillGravityClaw(tank.client, target);
 				}
 			}
 			if(sm_lastboss_enable_bomb.IntValue)
 			{
-				if(form_prev == FORMTHREE)
+				if(tank.form == FORMTHREE)
 				{
 					/* Умение: Взрывной коготь (только 3 форма) */
-					SkillBombClaw(target);
+					SkillBombClaw(tank.client, target);
 				}
 			}
 			if(sm_lastboss_enable_dread.IntValue)
 			{
-				if(form_prev == FORMFOUR)
+				if(tank.form == FORMFOUR)
 				{
 					/* Умение: Коготь ужаса (только 4 форма) */
-					SkillDreadClaw(target);
+					SkillDreadClaw(tank.client, target);
 				}
 			}
 			if(sm_lastboss_enable_lazy.IntValue)
 			{
-				if(form_prev == FORMFIVE)
+				if(tank.form == FORMFIVE)
 				{
 					/* Умение: Ленивый коготь (только 5 форма) */
-					SkillLazyClaw(target);
+					SkillLazyClaw(tank.client, target);
 				}
 			}
 			if(sm_lastboss_enable_rabies.IntValue)
 			{
-				if(form_prev == FORMSIX)
+				if(tank.form == FORMSIX)
 				{
 					/* Умение: Коготь бешенства (только 6 форма) */
-					SkillRabiesClaw(target);
+					SkillRabiesClaw(tank.client, target);
 				}
 			}
 			if(sm_lastboss_enable_freeze.IntValue)
 			{
-				if(form_prev == FORMSEVEN)
+				if(tank.form == FORMSEVEN)
 				{
 					/* Умение: Ледяной коготь (только 7 форма) */
-					SkillFreezeClaw(target);
+					SkillFreezeClaw(tank.client, target);
 				}
 			}			
 			if(sm_lastboss_enable_burn.IntValue)
 			{
-				if(form_prev == FORMEIGHT)
+				if(tank.form == FORMEIGHT)
 				{
 					/* Умение: Огненный коготь (только 8 форма) */
-					SkillBurnClaw(target);
+					SkillBurnClaw(tank.client, target);
 				}
 			}
 		}
-		if(StrEqual(weapon, "tank_rock") && attacker == idBoss)
+		if(StrEqual(weapon, "tank_rock") && attacker == tank.client)
 		{
 			if(sm_lastboss_enable_comet.IntValue)
 			{
-				if(form_prev == FORMEIGHT)
+				if(tank.form == FORMEIGHT)
 				{
 					/* Умение: Удар кометы (только 8 форма) */
-					SkillCometStrike(target, MOLOTOV);
+					SkillCometStrike(tank.client, target, MOLOTOV);
 				}
 				else
 				{
 					/* Умение: Взрывной камень (1-7 формы) */
-					SkillCometStrike(target, EXPLODE);
+					SkillCometStrike(tank.client, target, EXPLODE);
 				}
 			}
 		}
-		if(StrEqual(weapon, "melee") && target == idBoss)
+		if(StrEqual(weapon, "melee") && target == tank.client)
 		{
 			if(sm_lastboss_enable_steel.IntValue)
 			{
-				if(form_prev == FORMTWO)
+				if(tank.form == FORMTWO)
 				{
 					/* Умение: Стальная кожа (только 2 форма) */
 					EmitSoundToClient(attacker, SOUND_STEEL);
-					SetEntityHealth(idBoss, (GetEventInt(event,"dmg_health")+GetEventInt(event,"health")));
+					SetEntityHealth(tank.client, (GetEventInt(event,"dmg_health")+GetEventInt(event,"health")));
+					g_aTanks.SetArray(tankIndex, tank);
 				}
 			}
-			if(form_prev == FORMFOUR)
+			if(tank.form == FORMFOUR)
 			{
 				int random = GetRandomInt(1, 4);
 				if(random == 1)
@@ -691,10 +687,10 @@ public Action Event_Player_Hurt(Event event, const char[] name, bool dontBroadca
 			}
 			if(sm_lastboss_enable_gush.IntValue)
 			{
-				if(form_prev == FORMEIGHT)
+				if(tank.form == FORMEIGHT)
 				{
 					/* Умение: Огненный поток (только 8 форма) */
-					SkillFlameGush(attacker);
+					SkillFlameGush(tank.client, attacker);
 				}
 			}
 		}
@@ -702,7 +698,7 @@ public Action Event_Player_Hurt(Event event, const char[] name, bool dontBroadca
 	return Plugin_Continue;
 }
 
-void SkillEarthQuake(int target)
+void SkillEarthQuake(int tankClient, int target)
 {
 	float Pos[3], tPos[3];
 	
@@ -710,31 +706,39 @@ void SkillEarthQuake(int target)
 	{
 		for(int i = 1; i <= MaxClients; i++)
 		{
-			if(i == idBoss)
+			if(i == tankClient)
 				continue;
 			if(!IsClientInGame(i) || GetClientTeam(i) != 2)
 				continue;
-			GetClientAbsOrigin(idBoss, Pos);
+			GetClientAbsOrigin(tankClient, Pos);
 			GetClientAbsOrigin(i, tPos);
 			if(GetVectorDistance(tPos, Pos) < sm_lastboss_quake_radius.FloatValue)
 			{
 				EmitSoundToClient(i, SOUND_QUAKE);
 				ScreenShake(i, 50.0);
-				Smash(idBoss, i, sm_lastboss_quake_force.FloatValue, 1.0, 1.5);
+				Smash(tankClient, i, sm_lastboss_quake_force.FloatValue, 1.0, 1.5);
 			}
 		}
 	}
 }
 
-void SkillDreadClaw(int target)
+void SkillDreadClaw(int tankClient, int target)
 {
-	visibility = sm_lastboss_dreadrate.IntValue;
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+	
+	tank.visibility = sm_lastboss_dreadrate.IntValue;
+	g_aTanks.SetArray(tankIndex, tank);
+	
 	CreateTimer(sm_lastboss_dreadinterval.FloatValue, DreadTimer, target);
 	EmitSoundToAll(SOUND_DCLAW, target);
-	ScreenFade(target, 0, 0, 0, visibility, 0, 0);
+	ScreenFade(target, 0, 0, 0, tank.visibility, 0, 0);
 }
 
-void SkillGravityClaw(int target)
+void SkillGravityClaw(int tankClient, int target)
 {
 	SetEntityGravity(target, 0.3);
 	CreateTimer(sm_lastboss_gravityinterval.FloatValue, GravityTimer, target);
@@ -743,46 +747,68 @@ void SkillGravityClaw(int target)
 	ScreenShake(target, 30.0);
 }
 
-void SkillFreezeClaw(int target)
+void SkillFreezeClaw(int tankClient, int target)
 {
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+	
+	tank.freeze[target] = ON;
+	g_aTanks.SetArray(tankIndex, tank);
+	
 	FreezePlayer(target, sm_lastboss_freezetime.FloatValue);
 	CreateTimer(sm_lastboss_freezeinterval.FloatValue, FreezeTimer, target);
 }
 
-void SkillLazyClaw(int target)
+void SkillLazyClaw(int tankClient, int target)
 {
 	for(int i = 1; i <= MaxClients; i++)
 	{
-		if(i == idBoss)
+		if(i == tankClient)
 			continue;
 		if(!IsClientInGame(i) || GetClientTeam(i) != 2)
 			continue;
 		if(GetEntProp(i, Prop_Send, "m_zombieClass") != 8)
 		{
-			LazyPlayer(target);
+			LazyPlayer(i);
 		}
 	}
 }
 
-void SkillRabiesClaw(int target)
+void SkillRabiesClaw(int tankClient, int target)
 {
-	Rabies[target] = sm_lastboss_rabiestime.IntValue;
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+	
+	tank.Rabies[target] = sm_lastboss_rabiestime.IntValue;
+	tank.Toxin[target] = sm_lastboss_rabiestime.IntValue;
+	g_aTanks.SetArray(tankIndex, tank);
+	
 	CreateTimer(1.0, RabiesTimer, target);
-	Toxin[target] = sm_lastboss_rabiestime.IntValue;
 	CreateTimer(1.0, Toxin_Timer, target);
 	EmitSoundToAll(SOUND_ROAR, target);
 }
 
-void SkillBombClaw(int target)
+void SkillBombClaw(int tankClient, int target)
 {
 	float Pos[3];
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
 
 	for(int i = 1; i <= MaxClients; i++)
 	{
 		if(!IsClientInGame(i) || GetClientTeam(i) != 2)
 			continue;
 		GetClientAbsOrigin(i, Pos);
-		if(GetVectorDistance(Pos, trsPos[target]) < sm_lastboss_bombradius.FloatValue)
+		if(GetVectorDistance(Pos, tank.trsPos[target]) < sm_lastboss_bombradius.FloatValue)
 		{
 			DamageEffect(i, sm_lastboss_bombdamage.FloatValue);
 		}
@@ -794,17 +820,17 @@ void SkillBombClaw(int target)
 	LittleFlower(Pos, EXPLODE);
 
 	/* Отбрасывание */
-	PushAway(target, sm_lastboss_bombardforce.FloatValue, sm_lastboss_bombradius.FloatValue, 0.5);
+	PushAway(tankClient, target, sm_lastboss_bombardforce.FloatValue, sm_lastboss_bombradius.FloatValue, 0.5);
 }
 
-void SkillBurnClaw(int target)
+void SkillBurnClaw(int tankClient, int target)
 {
 	EmitSoundToAll(SOUND_BCLAW, target);
 	ScreenFade(target, 200, 0, 0, 150, 80, 1);
 	ScreenShake(target, 50.0);
 }
 
-void SkillCometStrike(int target, int type)
+void SkillCometStrike(int tankClient, int target, int type)
 {
 	float pos[3];
 	GetClientAbsOrigin(target, pos);
@@ -820,21 +846,27 @@ void SkillCometStrike(int target, int type)
 	}
 }
 
-void SkillFlameGush(int target)
+void SkillFlameGush(int tankClient, int target)
 {
 	float pos[3];
 
-	SkillBurnClaw(target);
+	SkillBurnClaw(tankClient, target);
 	LavaDamage(target);
-	GetClientAbsOrigin(idBoss, pos);
+	GetClientAbsOrigin(tankClient, pos);
 	LittleFlower(pos, MOLOTOV);
 }
 
-void SkillCallOfAbyss()
+void SkillCallOfAbyss(int tankClient)
 {
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+	
 	/* Остановка движения и защита от урона */
-	SetEntityMoveType(idBoss, MOVETYPE_NONE);
-	SetEntProp(idBoss, Prop_Data, "m_takedamage", 0, 1);
+	SetEntityMoveType(tank.client, MOVETYPE_NONE);
+	SetEntProp(tank.client, Prop_Data, "m_takedamage", 0, 1);
 	
 	for(int i = 1; i <= MaxClients; i++)
 	{
@@ -845,34 +877,38 @@ void SkillCallOfAbyss()
 	}
 	
 	/* Событие паники */
-	if((form_prev == FORMEIGHT && sm_lastboss_enable_abyss.IntValue == 1) || sm_lastboss_enable_abyss.IntValue == 2)
+	if((tank.form == FORMEIGHT && sm_lastboss_enable_abyss.IntValue == 1) || sm_lastboss_enable_abyss.IntValue == 2)
 	{
 		TriggerPanicEvent();
 	}
 	
 	/* Через 5 секунд смена формы и возобновление движения */
-	CreateTimer(5.0, HowlTimer);
+	CreateTimer(5.0, HowlTimer, tank.client);
 }
 
-public Action TankUpdate(Handle timer)
+public Action TankUpdate(Handle timer, int client)
 {
-	if (!IsValidEntity(idBoss) || !IsClientInGame(idBoss)/* || idBoss == DEAD*/)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if (!IsValidEntity(tank.client) || !IsClientInGame(tank.client))
 	{
-		TimerUpdate = null;
+		if (tank.timer != null) {
+			KillTimer(tank.timer);
+			tank.timer = null;
+		}
+		g_aTanks.Erase(tankIndex);
 		return Plugin_Stop;
 	}
 
-	int iCurrentHealth = GetClientHealth(idBoss);
+	int iCurrentHealth = GetClientHealth(tank.client);
 	
-	/*// Если здоровье упало до 0, но танк еще не умер (может быть в случае временной неуязвимости)
-	if (iCurrentHealth <= 0)
-	{
-		return Plugin_Continue;
-	}*/
-
 	// Определяем текущую фазу на основе оставшегося здоровья
-	float healthPercent = float(iCurrentHealth) / float(StartHealth);
-	int form_next = form_prev;
+	float healthPercent = float(iCurrentHealth) / float(tank.startHealth);
+	int form_next = tank.form;
 
 	if (healthPercent > 0.8) form_next = FORMONE;
 	else if (healthPercent > 0.7) form_next = FORMTWO;
@@ -884,35 +920,41 @@ public Action TankUpdate(Handle timer)
 	else form_next = FORMEIGHT;
 
 	// Если фаза изменилась - обновляем параметры
-	if (form_next != form_prev)
+	if (form_next != tank.form)
 	{
-		SetParameter(form_next);
+		tank.form = form_next;
+		g_aTanks.SetArray(tankIndex, tank);
+		SetParameter(tank.client, form_next);
 	}
 
 	return Plugin_Continue;
 }
 
-void SetParameter(int form_next)
+void SetParameter(int client, int form_next)
 {
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+	
 	int force;
 	float speed;
 	char color[32];
-	
-	form_prev = form_next;
 	
 	if(form_next != FORMONE)
 	{
 		if(sm_lastboss_enable_abyss.IntValue)
 		{
 			/* Умение: Зов Бездны (Рев и вызов паники) */
-			SkillCallOfAbyss();
+			SkillCallOfAbyss(client);
 		}
 		
 		/* Умение: Очищение (гасит огонь) */
-		ExtinguishEntity(idBoss);
+		ExtinguishEntity(client);
 		
 		/* Эффект при смене формы */
-		AttachParticle(idBoss, PARTICLE_SPAWN);
+		AttachParticle(client, PARTICLE_SPAWN);
 		for(int j = 1; j <= MaxClients; j++)
 		{
 			if(!IsClientInGame(j) || GetClientTeam(j) != 2)
@@ -934,8 +976,8 @@ void SetParameter(int form_next)
 			/* Умение: Фатальное зеркало (Телепорт к выжившим) */
 			if(sm_lastboss_enable_warp.IntValue)
 			{
-				CreateTimer(3.0, GetSurvivorPosition, _, TIMER_REPEAT);
-				CreateTimer(sm_lastboss_warp_interval.FloatValue, FatalMirror, _, TIMER_REPEAT);
+				CreateTimer(3.0, GetSurvivorPosition, client, TIMER_REPEAT);
+				CreateTimer(sm_lastboss_warp_interval.FloatValue, FatalMirror, client, TIMER_REPEAT);
 			}
 		}
 		case FORMTWO:
@@ -947,7 +989,7 @@ void SetParameter(int form_next)
 			sm_lastboss_color_second.GetString(color, sizeof(color));
 			
 			/* Увеличение веса */
-			SetEntityGravity(idBoss, sm_lastboss_weight_second.FloatValue);
+			SetEntityGravity(client, sm_lastboss_weight_second.FloatValue);
 		}
 		case FORMTHREE:
 		{
@@ -964,14 +1006,14 @@ void SetParameter(int form_next)
 			force = sm_lastboss_force_fourth.IntValue;
 			speed = sm_lastboss_speed_fourth.FloatValue;
 			sm_lastboss_color_fourth.GetString(color, sizeof(color));
-			SetEntityGravity(idBoss, 1.0);
+			SetEntityGravity(client, 1.0);
 			
 			/* Прикрепление частиц */
-			CreateTimer(0.8, ParticleTimer, _, TIMER_REPEAT);
+			CreateTimer(0.8, ParticleTimer, client, TIMER_REPEAT);
 			
 			/* Умение: Стелс-кожа */
 			if(sm_lastboss_enable_stealth.IntValue)
-				CreateTimer(sm_lastboss_stealth_fourth.FloatValue, StealthTimer);
+				CreateTimer(sm_lastboss_stealth_fourth.FloatValue, StealthTimer, client);
 		}
 		case FORMFIVE:
 		{
@@ -1001,24 +1043,24 @@ void SetParameter(int form_next)
 		{
 			if(sm_lastboss_enable_announce.IntValue)
 				PrintToChatAll(MESSAGE_EIGHTH);
-			SetEntityRenderMode(idBoss, RENDER_TRANSCOLOR);
-			SetEntityRenderColor(idBoss, _, _, _, 255);
+			SetEntityRenderMode(client, RENDER_TRANSCOLOR);
+			SetEntityRenderColor(client, _, _, _, 255);
 			
 			force = sm_lastboss_force_eighth.IntValue;
 			speed = sm_lastboss_speed_eighth.FloatValue;
 			sm_lastboss_color_eighth.GetString(color, sizeof(color));
-			SetEntityGravity(idBoss, 1.0);
+			SetEntityGravity(client, 1.0);
 			
 			/* Поджигание */
-			IgniteEntity(idBoss, 9999.9);
+			IgniteEntity(client, 9999.9);
 			
 			/* Умение: Безумный прыжок */
 			if(sm_lastboss_enable_jump.IntValue)
-				CreateTimer(sm_lastboss_jumpinterval_eighth.FloatValue, JumpingTimer, _, TIMER_REPEAT);
+				CreateTimer(sm_lastboss_jumpinterval_eighth.FloatValue, JumpingTimer, client, TIMER_REPEAT);
 				
 			float Origin[3], Angles[3];
-			GetEntPropVector(idBoss, Prop_Send, "m_vecOrigin", Origin);
-			GetEntPropVector(idBoss, Prop_Send, "m_angRotation", Angles);
+			GetEntPropVector(client, Prop_Send, "m_vecOrigin", Origin);
+			GetEntPropVector(client, Prop_Send, "m_angRotation", Angles);
 			Angles[0] += 90.0;
 			int ent[3];
 			
@@ -1028,9 +1070,9 @@ void SetParameter(int form_next)
 				if(IsValidEntity(ent[count]))
 				{
 					char tName[64];
-					Format(tName, sizeof(tName), "Tank%d", idBoss);
-					DispatchKeyValue(idBoss, "targetname", tName);
-					GetEntPropString(idBoss, Prop_Data, "m_iName", tName, sizeof(tName));
+					Format(tName, sizeof(tName), "Tank%d", client);
+					DispatchKeyValue(client, "targetname", tName);
+					GetEntPropString(client, Prop_Data, "m_iName", tName, sizeof(tName));
 
 					DispatchKeyValue(ent[count], "model", ENTITY_TIRE);
 					DispatchKeyValue(ent[count], "targetname", "TireEntity");
@@ -1052,7 +1094,7 @@ void SetParameter(int form_next)
 					AcceptEntityInput(ent[count], "SetParentAttachment");
 					AcceptEntityInput(ent[count], "Enable");
 					AcceptEntityInput(ent[count], "DisableCollision");
-					SetEntProp(ent[count], Prop_Send, "m_hOwnerEntity", idBoss);
+					SetEntProp(ent[count], Prop_Send, "m_hOwnerEntity", client);
 					TeleportEntity(ent[count], NULL_VECTOR, Angles, NULL_VECTOR);
 				}
 			}
@@ -1063,22 +1105,25 @@ void SetParameter(int form_next)
 	FindConVar("z_tank_throw_force").SetInt(force, true, true);
 	
 	/* Установка скорости */
-	SetEntPropFloat(idBoss, Prop_Send, "m_flLaggedMovementValue", speed);
+	SetEntPropFloat(client, Prop_Send, "m_flLaggedMovementValue", speed);
 	
 	/* Установка цвета */
-	SetEntityRenderMode(idBoss, view_as<RenderMode>(0));
-	DispatchKeyValue(idBoss, "rendercolor", color);
+	SetEntityRenderMode(client, view_as<RenderMode>(0));
+	DispatchKeyValue(client, "rendercolor", color);
 }
 
-public Action ParticleTimer(Handle timer)
+public Action ParticleTimer(Handle timer, int client)
 {
-	if(!IsValidEntity(idBoss) || idBoss == DEAD)
-		return Plugin_Stop;
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
 		
-	if(form_prev == FORMFOUR)
-		AttachParticle(idBoss, PARTICLE_FOURTH);
-	else if(form_prev == FORMEIGHT)
-		AttachParticle(idBoss, PARTICLE_EIGHTH);
+	if(tank.form == FORMFOUR)
+		AttachParticle(client, PARTICLE_FOURTH);
+	else if(tank.form == FORMEIGHT)
+		AttachParticle(client, PARTICLE_EIGHTH);
 	else
 	{
 		return Plugin_Stop;
@@ -1093,11 +1138,17 @@ public Action GravityTimer(Handle timer, any target)
 	return Plugin_Stop;
 }
 
-public Action JumpingTimer(Handle timer)
+public Action JumpingTimer(Handle timer, int client)
 {
-	if(form_prev == FORMEIGHT && IsValidEntity(idBoss) && IsClientInGame(idBoss) && idBoss != DEAD)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(tank.form == FORMEIGHT && IsValidEntity(tank.client) && IsClientInGame(tank.client))
 	{
-		AddVelocity(idBoss, sm_lastboss_jumpheight_eighth.FloatValue);
+		AddVelocity(tank.client, sm_lastboss_jumpheight_eighth.FloatValue);
 	}
 	else
 	{
@@ -1106,12 +1157,19 @@ public Action JumpingTimer(Handle timer)
 	return Plugin_Continue;
 }
 
-public Action StealthTimer(Handle timer)
+public Action StealthTimer(Handle timer, int client)
 {
-	if(form_prev == FORMFOUR && idBoss != DEAD)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(tank.form == FORMFOUR)
 	{
-		alpharate = 255;
-		Remove(idBoss);
+		tank.alpharate = 255;
+		g_aTanks.SetArray(tankIndex, tank);
+		Remove(tank.client);
 	}
 	return Plugin_Stop;
 }
@@ -1120,13 +1178,26 @@ public Action DreadTimer(Handle timer, any target)
 {
 	if(IsValidSurv(target))
 	{
-		visibility -= 8;
-		if(visibility < 0) visibility = 0;
-		ScreenFade(target, 0, 0, 0, visibility, 0, 1);
-		if(visibility <= 0)
+		// Находим все танки, которые могли вызвать эффект
+		for (int i = 0; i < g_aTanks.Length; i++)
 		{
-			visibility = 0;
-			return Plugin_Stop;
+			TankData tank;
+			g_aTanks.GetArray(i, tank);
+			
+			if (tank.form == FORMFOUR)
+			{
+				tank.visibility -= 8;
+				if(tank.visibility < 0) tank.visibility = 0;
+				ScreenFade(target, 0, 0, 0, tank.visibility, 0, 1);
+				g_aTanks.SetArray(i, tank);
+				
+				if(tank.visibility <= 0)
+				{
+					tank.visibility = 0;
+					g_aTanks.SetArray(i, tank);
+					return Plugin_Stop;
+				}
+			}
 		}
 	}
 	return Plugin_Continue;
@@ -1140,7 +1211,15 @@ public Action FreezeTimer(Handle timer, any target)
 		SetEntityMoveType(target, MOVETYPE_WALK);
 		SetEntityRenderColor(target, 255, 255, 255, 255);
 		ScreenFade(target, 0, 0, 0, 0, 0, 1);
-		freeze[target] = OFF;
+		
+		// Обнуляем флаг заморозки для всех танков
+		for (int i = 0; i < g_aTanks.Length; i++)
+		{
+			TankData tank;
+			g_aTanks.GetArray(i, tank);
+			tank.freeze[target] = OFF;
+			g_aTanks.SetArray(i, tank);
+		}
 	}
 	return Plugin_Stop;
 }
@@ -1149,19 +1228,33 @@ public Action RabiesTimer(Handle timer, any target)
 {
 	if(IsValidSurv(target))
 	{
-		if(Rabies[target] <= 0)
+		bool stillAffected = false;
+		
+		// Проверяем все танки на наличие эффекта бешенства
+		for (int i = 0; i < g_aTanks.Length; i++)
+		{
+			TankData tank;
+			g_aTanks.GetArray(i, tank);
+			
+			if (tank.Rabies[target] > 0)
+			{
+				stillAffected = true;
+				RabiesDamage(target);
+				tank.Rabies[target] -= 1;
+				g_aTanks.SetArray(i, tank);
+				EmitSoundToAll(SOUND_RABIES, target);
+				
+				if (tank.Rabies[target] > 0)
+				{
+					CreateTimer(1.0, RabiesTimer, target);
+				}
+			}
+		}
+		
+		if (!stillAffected)
 		{
 			return Plugin_Stop;
 		}
-
-		RabiesDamage(target);
-
-		if(Rabies[target] > 0)
-		{
-			CreateTimer(1.0, RabiesTimer, target);
-			Rabies[target] -= 1;
-		}
-		EmitSoundToAll(SOUND_RABIES, target);
 	}
 	return Plugin_Stop;
 }
@@ -1195,60 +1288,79 @@ public Action Toxin_Timer(Handle timer, any target)
 {
 	if(IsValidSurv(target))
 	{
-		if(Toxin[target] <= 0)
+		bool stillAffected = false;
+		
+		// Проверяем все танки на наличие токсина
+		for (int i = 0; i < g_aTanks.Length; i++)
 		{
-			KillToxin(target);
+			TankData tank;
+			g_aTanks.GetArray(i, tank);
+			
+			if (tank.Toxin[target] > 0)
+			{
+				stillAffected = true;
+				KillToxin(target);
+				tank.Toxin[target]--;
+				g_aTanks.SetArray(i, tank);
+				
+				if (tank.Toxin[target] > 0)
+				{
+					CreateTimer(1.0, Toxin_Timer, target);
+				}
+				
+				float pos[3];
+				GetClientAbsOrigin(target, pos);
+				
+				float angs[3];
+				GetClientEyeAngles(target, angs);
+				
+				angs[2] = ToxinAngle[GetRandomInt(0,100) % 20];
+				
+				TeleportEntity(target, pos, angs, NULL_VECTOR);
+				
+				int clients[2];
+				clients[0] = target;
+				
+				Handle message = StartMessageEx(g_FadeUserMsgId, clients, 1);
+				BfWriteShort(message, 255);
+				BfWriteShort(message, 255);
+				BfWriteShort(message, (0x0002));
+				BfWriteByte(message, GetRandomInt(0,255));
+				BfWriteByte(message, GetRandomInt(0,255));
+				BfWriteByte(message, GetRandomInt(0,255));
+				BfWriteByte(message, 128);
+				
+				EndMessage();
+			}
+		}
+		
+		if (!stillAffected)
+		{
 			return Plugin_Stop;
 		}
-		
-		KillToxin(target);
-		
-		if(Toxin[target] > 0)
-		{
-			CreateTimer(1.0, Toxin_Timer, target);
-			Toxin[target]--;
-		}
-		
-		float pos[3];
-		GetClientAbsOrigin(target, pos);
-		
-		float angs[3];
-		GetClientEyeAngles(target, angs);
-		
-		angs[2] = ToxinAngle[GetRandomInt(0,100) % 20];
-		
-		TeleportEntity(target, pos, angs, NULL_VECTOR);
-		
-		int clients[2];
-		clients[0] = target;
-		
-		Handle message = StartMessageEx(g_FadeUserMsgId, clients, 1);
-		BfWriteShort(message, 255);
-		BfWriteShort(message, 255);
-		BfWriteShort(message, (0x0002));
-		BfWriteByte(message, GetRandomInt(0,255));
-		BfWriteByte(message, GetRandomInt(0,255));
-		BfWriteByte(message, GetRandomInt(0,255));
-		BfWriteByte(message, 128);
-		
-		EndMessage();
 	}
 	return Plugin_Stop;
 }
 
-public Action HowlTimer(Handle timer)
+public Action HowlTimer(Handle timer, int client)
 {
-	if(IsValidEntity(idBoss) && idBoss != DEAD)
+	if(IsValidEntity(client))
 	{
-		SetEntityMoveType(idBoss, MOVETYPE_WALK);
-		SetEntProp(idBoss, Prop_Data, "m_takedamage", 2, 1);
+		SetEntityMoveType(client, MOVETYPE_WALK);
+		SetEntProp(client, Prop_Data, "m_takedamage", 2, 1);
 	}
 	return Plugin_Stop;
 }
 
-public Action WarpTimer(Handle timer)
+public Action WarpTimer(Handle timer, int client)
 {
-	if(IsValidEntity(idBoss) && IsClientInGame(idBoss) && idBoss != DEAD)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(IsValidEntity(tank.client) && IsClientInGame(tank.client))
 	{
 		float pos[3];
 		for(int i = 1; i <= MaxClients; i++)
@@ -1256,19 +1368,25 @@ public Action WarpTimer(Handle timer)
 			if(IsValidClient(i) && IsPlayerAlive(i) && GetClientTeam(i) == SURVIVOR)
 				EmitSoundToClient(i, SOUND_WARP);
 		}
-		GetClientAbsOrigin(idBoss, pos);
+		GetClientAbsOrigin(tank.client, pos);
 		ShowParticle(pos, PARTICLE_WARP, 2.0);
-		TeleportEntity(idBoss, ftlPos, NULL_VECTOR, NULL_VECTOR);
-		ShowParticle(ftlPos, PARTICLE_WARP, 2.0);
-		SetEntityMoveType(idBoss, MOVETYPE_WALK);
-		SetEntProp(idBoss, Prop_Data, "m_takedamage", 2, 1);
+		TeleportEntity(tank.client, tank.ftlPos, NULL_VECTOR, NULL_VECTOR);
+		ShowParticle(tank.ftlPos, PARTICLE_WARP, 2.0);
+		SetEntityMoveType(tank.client, MOVETYPE_WALK);
+		SetEntProp(tank.client, Prop_Data, "m_takedamage", 2, 1);
 	}
 	return Plugin_Stop;
 }
 
-public Action GetSurvivorPosition(Handle timer)
+public Action GetSurvivorPosition(Handle timer, int client)
 {
-	if(IsValidEntity(idBoss) && IsClientInGame(idBoss) && idBoss != DEAD)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(IsValidEntity(tank.client) && IsClientInGame(tank.client))
 	{
 		int count = 0;
 		int idAlive[MAXPLAYERS+1];
@@ -1282,7 +1400,8 @@ public Action GetSurvivorPosition(Handle timer)
 		}
 		if(count == 0) return Plugin_Stop;
 		int clientNum = GetRandomInt(0, count-1);
-		GetClientAbsOrigin(idAlive[clientNum], ftlPos);
+		GetClientAbsOrigin(idAlive[clientNum], tank.ftlPos);
+		g_aTanks.SetArray(tankIndex, tank);
 		return Plugin_Continue;
 	}
 	else
@@ -1291,16 +1410,22 @@ public Action GetSurvivorPosition(Handle timer)
 	}
 }
 
-public Action FatalMirror(Handle timer)
+public Action FatalMirror(Handle timer, int client)
 {
-	if(IsValidEntity(idBoss) && IsClientInGame(idBoss) && idBoss != DEAD)
+	int tankIndex = FindTankIndex(client);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(IsValidEntity(tank.client) && IsClientInGame(tank.client))
 	{
 		/* Остановка движения и защита от урона */
-		SetEntityMoveType(idBoss, MOVETYPE_NONE);
-		SetEntProp(idBoss, Prop_Data, "m_takedamage", 0, 1);
+		SetEntityMoveType(tank.client, MOVETYPE_NONE);
+		SetEntProp(tank.client, Prop_Data, "m_takedamage", 0, 1);
 		
 		/* Телепортация к позиции выжившего 2 секунды назад */
-		CreateTimer(1.5, WarpTimer);
+		CreateTimer(1.5, WarpTimer, tank.client);
 		return Plugin_Continue;
 	}
 	else
@@ -1321,15 +1446,23 @@ public Action Remove(int ent)
 
 public Action FadeOut(Handle Timer, int ent)
 {
-	if(!IsValidEntity(ent) || form_prev != FORMFOUR)
+	int tankIndex = FindTankIndex(ent);
+	if (tankIndex == -1) return Plugin_Stop;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
+	if(!IsValidEntity(ent) || tank.form != FORMFOUR)
 	{
 		return Plugin_Stop;
 	}
-	alpharate -= 2;
-	if(alpharate < 0) alpharate = 0;
+	tank.alpharate -= 2;
+	if(tank.alpharate < 0) tank.alpharate = 0;
 	SetEntityRenderMode(ent, RENDER_TRANSCOLOR);
-	SetEntityRenderColor(ent, 80, 80, 255, alpharate);
-	if(alpharate <= 0)
+	SetEntityRenderColor(ent, 80, 80, 255, tank.alpharate);
+	g_aTanks.SetArray(tankIndex, tank);
+	
+	if(tank.alpharate <= 0)
 	{
 		return Plugin_Stop;
 	}
@@ -1432,7 +1565,16 @@ void FreezePlayer(int target, float Time)
 		SetEntityMoveType(target, MOVETYPE_NONE);
 		SetEntityRenderColor(target, 0, 128, 255, 135);
 		EmitSoundToAll(SOUND_FREEZE, target);
-		freeze[target] = ON;
+		
+		// Устанавливаем флаг заморозки для всех танков
+		for (int i = 0; i < g_aTanks.Length; i++)
+		{
+			TankData tank;
+			g_aTanks.GetArray(i, tank);
+			tank.freeze[target] = ON;
+			g_aTanks.SetArray(i, tank);
+		}
+		
 		CreateTimer(Time, FreezeTimer, target);
 	}
 }
@@ -1520,15 +1662,21 @@ void ForceWeaponDrop(int client)
 	}
 }
 
-void PushAway(int target, float force, float radius, float duration)
+void PushAway(int tankClient, int target, float force, float radius, float duration)
 {
+	int tankIndex = FindTankIndex(tankClient);
+	if (tankIndex == -1) return;
+	
+	TankData tank;
+	g_aTanks.GetArray(tankIndex, tank);
+
 	int push = CreateEntityByName("point_push");
 	DispatchKeyValueFloat (push, "magnitude", force);
 	DispatchKeyValueFloat (push, "radius", radius);
 	SetVariantString("spawnflags 24");
 	AcceptEntityInput(push, "AddOutput");
 	DispatchSpawn(push);
-	TeleportEntity(push, trsPos[target], NULL_VECTOR, NULL_VECTOR);
+	TeleportEntity(push, tank.trsPos[target], NULL_VECTOR, NULL_VECTOR);
 	AcceptEntityInput(push, "Enable", -1, -1);
 	CreateTimer(duration, DeletePushForce, push);
 }
@@ -1645,4 +1793,19 @@ public bool IsValidClient(int client)
 bool IsValidSurv(int client)
 {
 	return client > 0 && client <= MaxClients && IsClientInGame(client) && IsPlayerAlive(client) && IsValidEntity(client) && GetClientTeam(client) == 2;
+}
+
+// Найти индекс танка в массиве по его client index
+int FindTankIndex(int client)
+{
+	for (int i = 0; i < g_aTanks.Length; i++)
+	{
+		TankData tank;
+		g_aTanks.GetArray(i, tank);
+		if (tank.client == client)
+		{
+			return i;
+		}
+	}
+	return -1;
 }
