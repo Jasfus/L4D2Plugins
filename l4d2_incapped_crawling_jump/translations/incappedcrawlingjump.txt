@@ -1,1 +1,28 @@
-
+"Phrases"
+{
+	"Crawl"
+	{
+		"en"		"Press FORWARD to crawl, Press SPACE to jump while incapped!"
+		"ru"		"Нажмите ВПЕРЁД чтобы ползти, ПРОБЕЛ чтобы прыгать в инкапе!"
+		"de"		"Drücke VORWÄRTS um zu kriechen, LEERTASTE um im Incap-Zustand zu springen!"
+		"fr"		"Appuyez sur AVANT pour ramper, ESPACE pour sauter en état d'incapacité!"
+		"es"		"Presiona ADELANTE para arrastrarte, ESPACIO para saltar cuando estés incapacitado!"
+		"pt"		"Pressione PARA FRENTE para rastejar, ESPAÇO para pular quando incapacitado!"
+		"pl"		"Naciśnij DO PRZODU aby czołgać się, SPACJA aby skakać gdy jesteś unieruchomiony!"
+		"it"		"Premi AVANTI per strisciare, SPAZIO per saltare quando sei incapace!"
+		"zh"		"按 前進 爬行, 按 空格 倒地時跳躍!"
+		"ja"		"前進キーで這って移動、スペースキーで incap 中にジャンプ！"
+		"ko"		"전진 키로 기어 이동, 스페이스 바로 기절 상태에서 점프!"
+		"uk"		"Натисніть ВПЕРЕД щоб повзти, ПРОБІЛ щоб стрибати у стані інкапа!"
+		"bg"		"Натиснете НАПРЕД за пълзене, SPACE за скачане в инкап състояние!"
+		"cz"		"Stiskni DOPŘEDU pro lezení, MEZERNÍK pro skákání když jsi incap!"
+		"hu"		"Nyomd meg a ELŐRE-t a mászáshoz, SZÓKÖZ-t az ugráshoz incap állapotban!"
+		"sv"		"Tryck FRAMFÖR för att krypa, MELLANSLAG för att hoppa när du är incap!"
+		"da"		"Tryk FREMTIL for at kravle, MELLEMRUM for at hoppe når du er incap!"
+		"fi"		"Paina ETEENPÄIN ryömimiseen, VÄLINÄPPÄIN hypätäksesi incap-tilassa!"
+		"no"		"Trykk FRAMOVER for å krype, MELLOMROM for å hoppe når du er incap!"
+		"tr"		"İleriye basarak sürün, Boşluk tuşu ile incap halinde zıplayın!"
+		"th"		"กด ไปข้างหน้า เพื่อคลาน, กด สเปซบาร์ เพื่อกระโดดเมื่อ incap!"
+		"vi"		"Nhấn TIẾN để bò, NHẤN CÁCH để nhảy khi bị incap!"
+	}
+}
