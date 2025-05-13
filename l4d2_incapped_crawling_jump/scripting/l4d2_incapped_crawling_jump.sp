@@ -18,10 +18,9 @@
 native int LMC_GetClientOverlayModel(int iClient);
 //LMC
 
-ConVar g_hCvarAllow, g_hCvarCrawl, g_hCvarCrazy, g_hCvarGlow, g_hCvarHint, g_hCvarHintS, g_hCvarMPGameMode, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarRate, g_hCvarSpeed, g_hCvarSpeeds, g_hCvarView;
-ConVar g_hCvarJumpEnabled, g_hCvarJumpForce; // Новые ConVar для прыжков
+ConVar g_hCvarAllow, g_hCvarCrawl, g_hCvarCrazy, g_hCvarGlow, g_hCvarHint, g_hCvarHintS, g_hCvarMPGameMode, g_hCvarModes, g_hCvarModesOff, g_hCvarModesTog, g_hCvarRate, g_hCvarSpeed, g_hCvarSpeeds, g_hCvarView, g_hCvarJumpEnabled, g_hCvarJumpForce;
 int g_iClone[MAXPLAYERS + 1] = {0, ...}, g_iDisplayed[MAXPLAYERS + 1] = {0, ...}, g_iHint = 0, g_iHints = 0, g_iRate = 0, g_iSpeed = 0, g_iView = 0;
-bool g_bCvarAllow = false, g_bMapStarted = false, g_bCrazy = false, g_bGlow = false, g_bRoundOver = false, g_bTranslation = false, g_bJumpEnabled = false;
+bool g_bCvarAllow = false, g_bMapStarted = false, g_bCrazy = false, g_bGlow = false, g_bRoundOver = false, g_bJumpEnabled = false;
 float g_fClientWait[MAXPLAYERS + 1] = {0.0, ...}, g_fJumpForce = 0.0;
 
 // Переменные для прыжков
@@ -72,17 +71,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	char sPath[PLATFORM_MAX_PATH];
-	BuildPath(Path_SM, sPath, PLATFORM_MAX_PATH, "translations/incappedcrawlingjump.phrases.txt");
-	
-	if (!FileExists(sPath))
-		g_bTranslation = false;
-	else
-	{
-		LoadTranslations("incappedcrawlingjump.phrases");
-		g_bTranslation = true;
-	}
-	
+	LoadTranslations("incappedcrawlingjump.phrases");
+
 	g_hCvarAllow = CreateConVar("l4d2_crawling", "1", "0=Plugin off, 1=Plugin on.", CVAR_FLAGS);
 	g_hCvarCrazy = CreateConVar("l4d2_crawling_crazy", "0", "0=Off. 1=Use crazy faces (original before version 2.0).", CVAR_FLAGS);
 	g_hCvarGlow = CreateConVar("l4d2_crawling_glow", "1", "0=Disables survivor glow on crawling, 1=Enables glow if not realism.", CVAR_FLAGS);
@@ -355,21 +345,13 @@ Action TimerResetStart(Handle timer, any client)
 	{
 		case 1: // Print to chat
 		{
-			if (g_bTranslation)
-				Format(sBuffer, sizeof(sBuffer), "\x04[\x01Incapped Crawling\x04]\x01 %T", "Crawl", client);
-			else
-				Format(sBuffer, sizeof(sBuffer), "\x04[\x01Incapped Crawling\x04]\x01 Press FORWARD to crawl while incapped");
-
+			Format(sBuffer, sizeof(sBuffer), "\x04[\x01Incapped Crawling\x04]\x01 %T", "Crawl", client);
 			PrintToChat(client, sBuffer);
 		}
 
 		case 2: // Display hint
 		{
-			if (g_bTranslation)
-				Format(sBuffer, sizeof(sBuffer), "[Incapped Crawling] %T", "Crawl", client);
-			else
-				Format(sBuffer, sizeof(sBuffer), "[Incapped Crawling] - Press FORWARD to crawl while incapped");
-
+			Format(sBuffer, sizeof(sBuffer), "[Incapped Crawling] %T", "Crawl", client);
 			PrintHintText(client, sBuffer);
 		}
 	}
