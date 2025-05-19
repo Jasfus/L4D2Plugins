@@ -1,0 +1,19 @@
+sudo apt-get update
+sudo dpkg --add-architecture i386; sudo apt update; sudo apt install curl wget file tar bzip2 gzip unzip bsdmainutils python3 util-linux ca-certificates binutils bc jq tmux netcat lib32gcc1 lib32gcc-s1 lib32stdc++6 libsdl2-2.0-0:i386 steamcmd
+sudo apt install lib32z1
+sudo apt-get install lib32gcc1 libc6-i386
+sudo apt-get install lib32z1
+sudo apt-get install libc6-i386 lib32gcc1 lib32stdc++6
+sudo apt install gcc-multilib g++-multilib
+mkdir steamcmd
+cd steamcmd
+wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz
+tar -xvzf steamcmd_linux.tar.gz
+rm steamcmd_linux.tar.gz
+cd
+./steamcmd/steamcmd.sh +force_install_dir ./l4d2/ +login Jasfus +app_update 222860 validate +quit
+
+ln -s /home/l4d2server/steamcmd/linux32/steamclient.so /home/l4d2server/.steam/sdk32/steamclient.so
+ls -la /home/l4d2server/.steam/sdk32/
+python3 ./l4d2_restart.py
+screen -r l4d2
