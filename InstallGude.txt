@@ -11,7 +11,7 @@ wget http://media.steampowered.com/installer/steamcmd_linux.tar.gz
 tar -xvzf steamcmd_linux.tar.gz
 rm steamcmd_linux.tar.gz
 cd
-./steamcmd/steamcmd.sh +force_install_dir ./l4d2/ +login Jasfus +app_update 222860 validate +quit
+./steamcmd/steamcmd.sh +force_install_dir ./l4d2/ +login "Yourlogin" +app_update 222860 validate +quit
 
 ln -s /home/l4d2server/steamcmd/linux32/steamclient.so /home/l4d2server/.steam/sdk32/steamclient.so
 ls -la /home/l4d2server/.steam/sdk32/
