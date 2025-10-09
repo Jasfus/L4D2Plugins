@@ -20,13 +20,7 @@ public Plugin myinfo =
 char g_BlockedNames[][] = 
 {
 	"FreeTP",
-	"Freetp", 
-	"freetp",
-	"Pioneer",
-	"pioneer",
-	"FREETP",
-	"PIONEER",
-	"GhostRiP"
+	"Pioneer"
 };
 
 public void OnPluginStart()
@@ -158,7 +152,7 @@ bool IsNicknameBlocked(const char[] nickname)
 		strcopy(tempBlocked, sizeof(tempBlocked), g_BlockedNames[i]);
 		StringToLower(tempBlocked);
 		
-		if (StrContains(tempNickname, tempBlocked) != -1)
+		if (StrContains(tempNickname, tempBlocked, false) >-1)
 		{
 			return true;
 		}
