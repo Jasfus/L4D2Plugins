@@ -1,0 +1,450 @@
+/*
+\x03-{green}
+\x01-{default}
+*/
+"Phrases"
+{
+	"Weapon1t"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {green}tier 1 weapon{default}."
+		"ru"		"{1} Вы нашли {green}оружие 1-го уровня{default}."
+	}
+	"Weapon2t"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}tier 2 weapon{default}."
+		"ru"		"{1} Вы нашли {lightgreen}оружие 2-го уровня{default}."
+	}
+	"M60found"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}M60 rifle{default}."
+		"ru"		"{1} Вы нашли {lightgreen}M60{default}."
+	}
+	"Grenlaynchfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}Grenade launcher{default}."
+		"ru"		"{1} Вы нашли {lightgreen}Ракетницу{default}."
+	}
+	"Secfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}secondary weapons{default}."
+		"ru"		"{1} Вы нашли {lightgreen}дополнительное оружие{default}."
+	}
+	"Drugsfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}drugs{default}."
+		"ru"		"{1} Вы нашли {lightgreen}коробку с наркотиками{default}."
+	}
+	"Medicfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}medical items{default}."
+		"ru"		"{1} Вы нашли {lightgreen}коробку медика{default}."
+	}
+	"Throwfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}throwable{default}."
+		"ru"		"{1} Вы нашли {lightgreen}метательное оружие{default}."
+	}
+	"Itemfound"
+	{
+		"#format"	"{1:s},{2:s}"
+		"en"		"{1} You have found {lightgreen}{2}{default}."
+		"ru"		"{1} Вы нашли {lightgreen}{2}{default}."
+	}
+	"Upgfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}upgrade pack{default}."
+		"ru"		"{1} Вы нашли {lightgreen}спец патроны{default}."
+	}
+	"Laserfound"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}laser box{default}."
+		"ru"		"{1} Вы нашли {lightgreen}коробку лазеров{default}."
+	}
+	"Laser2found"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}laser box{default}."
+		"ru"		"{1} {lightgreen}{2} {default} нашел {lightgreen}коробку лазеров{default}."
+	}
+	"Speedboost"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}speed boost{default}."
+		"ru"		"{1} Вы продили {lightgreen}свое ускорение{default}."
+	}
+	"Speedboost2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}speed boost{default}."
+		"ru"		"{1} Вы получили {lightgreen}ускорение{default}."
+	}
+	"Speedboost3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Speed boost{default} ended."
+		"ru"		"{1} {lightgreen}Ускорение{default} закончилось."
+	}
+	"invulnerability"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}invulnerability{default}."
+		"ru"		"{1} Вы продили {lightgreen}неуязвимость{default}."
+	}
+	"invulnerability1"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}invulnerability{default}."
+		"ru"		"{1} Вы получили {lightgreen}неуязвимость{default}."
+	}
+	"invulnerability2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Invulnerability{default} ended."
+		"ru"		"{1} {lightgreen}Неуязвимость{default} закончилась."
+	}
+	"regen"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}regeneration{default}."
+		"ru"		"{1} Вы продили {lightgreen}регенерацию{default}."
+	}
+	"regen2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}regeneration{default}."
+		"ru"		"{1} Вы получили {lightgreen}регенерацию{default}."
+	}
+	"regen3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Regeneration{default} ended."
+		"ru"		"{1} {lightgreen}Регенерация{default} закончилась."
+	}
+	"firepower"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}regeneration{default}."
+		"ru"		"{1} Вы расширили свою {lightgreen}огневую мощь{default}."
+	}
+	"firepower2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}regeneration{default}."
+		"ru"		"{1} Вы получили {lightgreen}огневую мощь{default}."
+	}
+	"infammo"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}infinite ammo{default}."
+		"ru"		"{1} Вы расширили свою {lightgreen}бесконечные боеприпасы{default}."
+	}
+	"infammo2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}infinite ammo{default}."
+		"ru"		"{1} Вы получили {lightgreen}бесконечные боеприпасы{default}."
+	}
+	"explshot"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}explosive shots{default}."
+		"ru"		"{1} Вы расширили свою {lightgreen}взрывные выстрелы{default}."
+	}
+	"explshot2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}explosive shots{default}."
+		"ru"		"{1} Вы получили {lightgreen}взрывные выстрелы{default}."
+	}
+	"explshot3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Explosive shots{default} effect has ended."
+		"ru"		"{1} {lightgreen}Взрывные выстрелы{default} закончились."
+	}
+	"infgaul"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found {lightgreen}Infinity Gauntlet{default}."
+		"ru"		"{1} {lightgreen}{2} {default}нашел {lightgreen}Перчатку Бесконечности{default}."
+	}
+	"infgaul2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}Infinity Gauntlet{default}."
+		"ru"		"{1} Вы нашли {lightgreen}Перчатку Бесконечности{default}."
+	}
+	"respa"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} You have respawned {lightgreen}{2} {default}with a LootBox."
+		"ru"		"{1} Вы нашли {lightgreen}{2} {default}в LootBox."
+	}
+	"respa2"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} You have been respawned by {lightgreen}{2} {default}with a LootBox."
+		"ru"		"{1} Вас нашлел игрок {lightgreen}{2} {default}в LootBox."
+	}
+	"respa3"
+	{
+		"#format"	"{1:s},{2:N},{3:N}"
+		"en"		"{1} {lightgreen}{2} {default}has respawned {lightgreen}{3} {default}with a LootBox."
+		"ru"		"{1} {lightgreen}{2} {default}нашел игрока {lightgreen}{3} {default}в LootBox."
+	}
+	"panic1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found {lightgreen}panic event{default}."
+		"ru"		"{1} {lightgreen}{2} {default}вызвал {lightgreen}панику{default}."
+	}
+	"panic2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}panic event{default}."
+		"ru"		"{1} Вы вызвали {lightgreen}панику{default}."
+	}
+	"somezomb1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found {lightgreen}some zombies{default}."
+		"ru"		"{1} {lightgreen}{2} {default}призвал {lightgreen}несколько зомби{default}."
+	}
+	"somezomb2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}some zombies{default}."
+		"ru"		"{1} Вы призвали {lightgreen}несколько зомби{default}."
+	}
+	"vomittr"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default} has opened a {lightgreen}vomit trap{default}."
+		"ru"		"{1} {lightgreen}{2} {default} открыл {lightgreen}рвотную ловушку{default}"
+	}
+	"icetr"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default} has opened a {lightgreen}ice trap{default}."
+		"ru"		"{1} {lightgreen}{2} {default} открыл {lightgreen}замораживающую ловушку{default}."
+	}
+	"revers1"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}reversed controls{default}."
+		"ru"		"{1} Вы продлили {lightgreen}обратное управление{default}."
+	}
+	"revers2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}reversed controls{default}."
+		"ru"		"{1} Вы получили {lightgreen}обратное управление{default}."
+	}
+	"revers3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Reversed controls{default} effect has ended."
+		"ru"		"{1} {lightgreen}Обратное управление{default} закончилось."
+	}
+	"SpitTrap1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has opened a {lightgreen}spit trap{default}."
+		"ru"		"{1} {lightgreen}{2} {default}открыл {lightgreen}плевотную ловушку{default}."
+	}
+	"SpitTrap2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have opened a {lightgreen}spit trap{default}."
+		"ru"		"{1} Вы открыли {lightgreen}плевотную ловушку{default}."
+	}
+	"wicthbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}Witch{default}."
+		"ru"		"{1} {lightgreen}{2} {default}открыл коробку с {lightgreen}Ведьмой{default}."
+	}
+	"wicthbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}Witch{default}."
+		"ru"		"{1} Вы открыли коробку с {lightgreen}Ведьмой{default}."
+	}
+	"tankbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}Tank{default}."
+		"ru"		"{1} {lightgreen}{2} {default}открыл коробку с {lightgreen}Танком{default}."
+	}
+	"tankbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}Tank{default}."
+		"ru"		"{1} Вы открыли коробку с {lightgreen}Танком{default}."
+	}
+	"toxicbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}toxic cloud{default}."
+		"ru"		"{1} {lightgreen}{2} {default}открыл {lightgreen}Токсичную{default}коробку."
+	}
+	"toxicbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}toxic cloud{default}."
+		"ru"		"{1} Вы открыли {lightgreen}Токсичную{default}коробку."
+	}
+	"jocbox"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}Jockey{default}."
+		"ru"		"{1} Вы открыли коробку c {lightgreen}Жокеем{default}."
+	}
+	"barelbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}explosive barrel{default}."
+		"ru"		"{1} {lightgreen}{2} {default}нашел {lightgreen}горящую бочку{default}."
+	}
+	"barelbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}explosive barrel{default}."
+		"ru"		"{1} Вы нашли {lightgreen}горящую бочку{default}."
+	}
+	"bwbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}black and white{default}."
+		"ru"		"{1} Вы стали {lightgreen}черно-белым{default}."
+	}
+	"Fragility1"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}fragility {default}, your {lightgreen}invulnerability {default}has been removed."
+		"ru"		"{1} Вы стали {lightgreen}хрупким {default}, ваша{lightgreen}неуязвимость {default}пропала."
+	}
+	"Fragility2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}fragility {default}effect."
+		"ru"		"{1} Вы продлили свой эффект {lightgreen}хрупкости{default}."
+	}
+	"Fragility3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found {lightgreen}fragility {default}effect."
+		"ru"		"{1} Вы нашли эффект {lightgreen}хрупкости{default}."
+	}
+	"Fragility4"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Fragility {default}ended."
+		"ru"		"{1} {lightgreen}Эффект хрупкости{default} закончился."
+	}
+	"Beartr"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have opened a {lightgreen}bear trap{default}."
+		"ru"		"{1} Вы попали в {lightgreen}Медвежий капкан{default}."
+	}
+	"ranang2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have obtained {lightgreen}random orientation{default}."
+		"ru"		"{1} Вы получили {lightgreen}произвольную ориентацию{default}."
+	}
+	"ranang1"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have extended your {lightgreen}random orientation{default}."
+		"ru"		"{1} Вы продлили {lightgreen}произвольную ориентацию{default}."
+	}
+	"ranang3"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} {lightgreen}Random orientation {default}ended."
+		"ru"		"{1} Время {lightgreen}произвольной ориентации{default} вышло."
+	}
+	"fpbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}firework party{default}."
+		"ru"		"{1} {lightgreen}{2} {default}запускает {lightgreen}фейверки{default}."
+	}
+	"fpbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}firework party{default}."
+		"ru"		"{1} Вы запустили {lightgreen}фейверки{default}."
+	}
+	"ftbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}full team of infected{default}."
+		"ru"		"{1} {lightgreen}{2} {default}запускает {lightgreen}полную команду зараженных{default}."
+	}
+	"ftbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}full team of infected{default}."
+		"ru"		"{1} Вы запустили {lightgreen}полную команду зараженных{default}."
+	}
+	"tzbox1"
+	{
+		"#format"	"{1:s},{2:N}"
+		"en"		"{1} {lightgreen}{2} {default}has found a {lightgreen}TitanZombies{default}."
+		"ru"		"{1} {lightgreen}{2} {default}накормил {lightgreen}просроченой растишкой {default}зомби."
+	}
+	"tzbox2"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} You have found a {lightgreen}TitanZombies{default}."
+		"ru"		"{1} Вы накормили {lightgreen}просроченой растишкой {default}зомби.."
+	}
+	"waitact"
+	{
+		"#format"	"{1:s},{2:.1f}"
+		"en"		"{1} Wait {lightgreen}{2} {default}seconds to open next LootBox."
+		"ru"		"{1} Подождите {lightgreen}{2} {default}сек чтобы открыть LootBox."
+	}
+	"nospawn"
+	{
+		"#format"	"{1:s}"
+		"en"		"{1} Can't spawn a LootBox here, please try again."
+		"ru"		"{1} Вы неможете создать LootBox здесь, попробуйте позже."
+	}
+	"firework crate"
+	{
+		"en"		"firework crate"
+		"ru"		"ящик с фейерверками"
+	}
+
+	"gascan"
+	{
+		"en"		"gascan"
+		"ru"		"канистра с бензином"
+	}
+
+	"propane tank"
+	{
+		"en"		"propane tank"
+		"ru"		"баллон с пропаном"
+	}
+
+	"oxygen tank"
+	{
+		"en"		"oxygen tank"
+		"ru"		"баллон с кислородом"
+	}
+}
